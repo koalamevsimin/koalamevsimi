@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koala Mevsimi</title>
+
+<style>
+body{
+margin:0;
+background:linear-gradient(#020111,#000);
+font-family:Arial;
+color:white;
+text-align:center;
+min-height:220vh;
+overflow-x:hidden;
+}
+
+h1{margin-top:90px;font-size:36px}
+.alt{font-size:22px}
+.info{font-size:18px;opacity:.8;margin-bottom:40px}
+
+.star{
+position:absolute;
+font-size:17px;
+cursor:pointer;
+color:#fff;
+}
+.visitor{color:#b26bff}
+
+.quote{
+position:absolute;
+background:rgba(0,0,0,.75);
+padding:10px 14px;
+border-radius:12px;
+font-size:18px;
+max-width:240px;
+animation:fade 4s forwards;
+}
+@keyframes fade{
+0%{opacity:0}
+10%{opacity:1}
+90%{opacity:1}
+100%{opacity:0}
+}
+
+.heart{
+position:absolute;
+color:#ff4d6d;
+animation:heart .8s forwards;
+}
+@keyframes heart{
+0%{opacity:1;transform:scale(.5)}
+100%{opacity:0;transform:translateY(-25px) scale(1.4)}
+}
+
+.box{
+position:fixed;
+top:15px;
+left:10px;
+right:10px;
+margin:auto;
+max-width:320px;
+background:rgba(0,0,0,.65);
+padding:10px;
+border-radius:14px;
+backdrop-filter:blur(6px);
+}
+.box input{width:65%;padding:6px;border-radius:8px;border:none}
+.box button{padding:6px 10px;border:none;border-radius:8px;background:#b26bff;color:white}
+
+.mandalina{cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<div style="font-size:14px;margin-bottom:4px">Sen de bir söz ekle</div>
+<input id="visitorText" placeholder="kalbinden geçen...">
+<button onclick="addVisitor()">Ekle</button>
+</div>
+
+<h1>Koala Mevsimi <span class="mandalina" onclick="alert('Kalbim senden vazgeçmedi… sadece yoruldu')">🍊</span></h1>
+<div class="alt">Bazı şeyler söylenemez</div>
+<div class="info">Yıldızların üstüne basmayı unutma</div>
+
+<script>
+
+const sozler=[
+"Özlemek, adını içimde sessizce haykırmaktır.",
+"Gözlerin uzakta ama kalbin hâlâ avuçlarımda gibi.",
+"Hasret geceleri konuşan sessizliğim oldu.",
+"Sen yoksan kalabalıklar bile yalnızlıktır.",
+"Mesafeler sadece bedenleri ayırır kalpleri değil.",
+"Özlemek bir şarkıda boğulmak gibidir.",
+"Gülüşünü hatırladıkça içimde bir ev yanıyor.",
+"Sensizlik en gürültülü acı.",
+"Adını duymak kalbime dokunan rüzgar.",
+"Hasret gözlerimin senden habersiz dolmasıdır.",
+"Yarım kalan bir masalda yaşıyorum.",
+"Kalbim sana kavuşacağı günü ezberliyor.",
+"Sensizliğe alışmak nefessiz yaşamaktır.",
+"Sarılırsam bütün hasretim gözyaşı olacak.",
+"Yokluğun içimi boşaltıyor.",
+"Sesini unutmadım sadece susuyorum.",
+"Sen beni yarım bıraktın.",
+"Düşünceler uykumu çalıyor.",
+"İçimde hâlâ sen varsın.",
+"Kalbim sustu çünkü değişmiyorsun.",
+"Özlemek alışkanlık oldu.",
+"Kendime geç kaldığım için kırgınım.",
+"Mutlu olduğun yerde değilim ama hâlâ seninleyim.",
+"Hiçbir mevsim bahar olmadı."
+];
+
+function createStar(text,visitor=false,top=null,left=null){
+const star=document.createElement("div");
+star.className="star";
+if(visitor) star.classList.add("visitor");
+star.innerHTML="★";
+
+const t=top ?? Math.random()*200+10;
+const l=left ?? Math.random()*95;
+
+star.style.top=t+"vh";
+star.style.left=l+"vw";
+
+star.onclick=()=>{
+const q=document.createElement("div");
+q.className="quote";
+q.innerText=text;
+q.style.top=star.offsetTop-10+"px";
+q.style.left=star.offsetLeft+20+"px";
+document.body.appendChild(q);
+setTimeout(()=>q.remove(),4000);
+
+const h=document.createElement("div");
+h.className="heart";
+h.innerText="💔";
+h.style.top=star.offsetTop+"px";
+h.style.left=star.offsetLeft+"px";
+document.body.appendChild(h);
+setTimeout(()=>h.remove(),800);
+}
+
+document.body.appendChild(star);
+return {text,top:t,left:l};
+}
+
+/* ANA YILDIZLAR */
+sozler.forEach(s=>{
+createStar(s);
+createStar(s);   /* yoğunluk artırma */
+});
+
+/* ZİYARETÇİ */
+const saved=JSON.parse(localStorage.getItem("visitorStars")||"[]");
+saved.forEach(s=>createStar(s.text,true,s.top,s.left));
+
+function addVisitor(){
+const val=document.getElementById("visitorText").value;
+if(!val) return;
+const star=createStar(val,true);
+saved.push(star);
+localStorage.setItem("visitorStars",JSON.stringify(saved));
+document.getElementById("visitorText").value="";
+}
+
+</script>
+</body>
+</html>
