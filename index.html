@@ -8,96 +8,47 @@
 <style>
 body{
 margin:0;
-overflow:hidden;
-font-family:Arial;
 background:linear-gradient(#020111,#000);
-color:#fff;
+color:white;
+font-family:Arial;
+text-align:center;
+height:100vh;
+overflow:hidden;
 }
-
-/* yıldız */
-.star{
-position:absolute;
-font-size:13px;
-cursor:pointer;
-}
-
-/* ziyaretçi yıldızı */
-.visitor{
-color:#b266ff;
-}
-
-/* söz kutusu */
-.quote{
-position:absolute;
-background:rgba(0,0,0,.7);
-padding:8px 12px;
-border-radius:10px;
-font-size:14px;
-pointer-events:none;
-}
-
-/* kırık kalp */
-.heart{
-position:absolute;
-font-size:18px;
-color:#ff4d6d;
-animation:pop .8s forwards;
-pointer-events:none;
-}
-@keyframes pop{
-0%{transform:scale(.2);opacity:1}
-100%{transform:scale(2);opacity:0}
-}
-
-/* kayan yıldız */
-.shoot{
-position:absolute;
-width:2px;
-height:2px;
-background:white;
-box-shadow:0 0 8px white;
-animation:shoot 2s linear forwards;
-}
-@keyframes shoot{
-0%{transform:translate(0,0)}
-100%{transform:translate(400px,200px);opacity:0}
-}
-
-/* input alanı */
 .panel{
 position:fixed;
 bottom:20px;
 left:50%;
 transform:translateX(-50%);
 }
-input{
-padding:8px;
-border-radius:10px;
-border:none;
-}
-button{
-padding:8px 12px;
-border:none;
-border-radius:10px;
+.star{
+position:absolute;
 cursor:pointer;
+font-size:18px;
+}
+.quote{
+background:rgba(0,0,0,.7);
+padding:8px 12px;
+border-radius:10px;
+margin-top:5px;
+font-size:14px;
 }
 </style>
 </head>
-
 <body>
+
+<h2>Koala Mevsimi ⭐</h2>
 
 <div class="panel">
 <input id="visitorText" placeholder="Bir söz bırak...">
 <button onclick="addVisitor()">Gönder</button>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } 
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* senin firebase */
 const firebaseConfig = {
 apiKey: "AIzaSyAu4Plky_LdaPsPPwtg2y5FEplgDqnUMhA",
 authDomain: "koala-mevsimi.firebaseapp.com",
@@ -109,98 +60,39 @@ appId: "1:960846201677:web:0f4126d042754a29ab6d04"
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const colRef = collection(db,"stars");
 
-/* SÖZLER */
-const sozler=[
-"Özlemek, adını içimde sessizce haykırmaktır.",
-"Gözlerin uzakta, ama kalbin hâlâ avuçlarımda gibi.",
-"Hasretin, geceleri en çok konuşan sessizliğim oldu.",
-"Sen yoksan, kalabalıklar bile yalnızlıktır.",
-"Mesafeler sadece bedenleri ayırır, kalpleri değil.",
-"Özlemek bazen bir şarkıda boğulmak gibidir.",
-"Gülüşünü hatırladıkça içimde bir ev yanıyor.",
-"Seninle susmak bile mutluluktu, sensizlik en gürültülü acı."
-];
-
-/* yıldız oluştur */
-function createStar(text,visitor=false,top,left){
+function createStar(text,x,y){
 const star=document.createElement("div");
-star.className="star"+(visitor?" visitor":"");
-star.innerHTML="✦";
-
-top = top ?? Math.random()*window.innerHeight;
-left = left ?? Math.random()*window.innerWidth;
-
-star.style.top=top+"px";
-star.style.left=left+"px";
-
-star.onclick=()=>{
-const q=document.createElement("div");
-q.className="quote";
-q.innerText=text;
-q.style.top=top+20+"px";
-q.style.left=left+"px";
-document.body.appendChild(q);
-
-const h=document.createElement("div");
-h.className="heart";
-h.innerText="💔";
-h.style.top=top+"px";
-h.style.left=left+"px";
-document.body.appendChild(h);
-
-setTimeout(()=>q.remove(),2500);
-setTimeout(()=>h.remove(),800);
-};
-
+star.className="star";
+star.style.left=x+"vw";
+star.style.top=y+"vh";
+star.innerHTML="⭐<div class='quote'>"+text+"</div>";
 document.body.appendChild(star);
-return {top,left};
 }
 
-/* kendi sözlerin */
-sozler.forEach(s=>{
-createStar(s);
-createStar(s);
-});
-
-/* realtime ziyaretçi yıldız */
-onSnapshot(query(colRef,orderBy("time")), snap=>{
-snap.docChanges().forEach(c=>{
-if(c.type==="added"){
-const d=c.doc.data();
-createStar(d.text,true,d.top,d.left);
-}
+const q=query(collection(db,"quotes"),orderBy("time"));
+onSnapshot(q,snap=>{
+document.querySelectorAll(".star").forEach(e=>e.remove());
+snap.forEach(doc=>{
+const d=doc.data();
+createStar(d.text,d.x,d.y);
 });
 });
 
-/* ziyaretçi ekle */
-window.addVisitor = async ()=>{
+window.addVisitor = async function(){
 const val=document.getElementById("visitorText").value;
 if(!val) return;
 
-const pos=createStar(val,true);
-
-await addDoc(colRef,{
+await addDoc(collection(db,"quotes"),{
 text:val,
-top:pos.top,
-left:pos.left,
+x:Math.random()*90,
+y:Math.random()*80,
 time:Date.now()
 });
 
 document.getElementById("visitorText").value="";
-};
-
-/* kayan yıldız */
-setInterval(()=>{
-const s=document.createElement("div");
-s.className="shoot";
-s.style.top=Math.random()*200+"px";
-s.style.left="0px";
-document.body.appendChild(s);
-setTimeout(()=>s.remove(),2000);
-},5000);
-
+}
 </script>
+
 </body>
 </html>
