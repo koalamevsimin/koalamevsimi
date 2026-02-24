@@ -160,5 +160,37 @@ if(c.type==="added") star(c.doc.data().text,true);
 });
 </script>
 
-</body>
+</body><script type="module">
+import { doc, getDoc, setDoc, updateDoc, increment }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const sayacRef = doc(db,"sayac","ziyaret");
+
+/* sayaç kutusu oluştur */
+const sayi=document.createElement("div");
+sayi.style.position="fixed";
+sayi.style.top="10px";
+sayi.style.right="15px";
+sayi.style.fontSize="14px";
+sayi.style.opacity=".7";
+sayi.style.zIndex="20";
+document.body.appendChild(sayi);
+
+/* sayaç işlemi */
+async function sayac(){
+const snap=await getDoc(sayacRef);
+
+if(!snap.exists()){
+await setDoc(sayacRef,{count:1});
+sayi.innerText="✨ 1 kişi bu sayfaya dokundu";
+}
+else{
+await updateDoc(sayacRef,{count:increment(1)});
+const yeni=(await getDoc(sayacRef)).data().count;
+sayi.innerText="✨ "+yeni+" kişi bu sayfaya dokundu";
+}
+}
+sayac();
+</script>
 </html>
+
