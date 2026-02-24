@@ -8,38 +8,48 @@
 <style>
 body{
 margin:0;
-overflow:hidden;
 background:linear-gradient(#020111,#000);
 color:white;
 font-family:Arial;
 text-align:center;
+min-height:100vh;
+overflow:hidden;
 }
 
-h1{margin-top:70px;font-size:40px}
-.alt{opacity:.8}
+h1{margin-top:90px;font-size:38px}
+.alt{font-size:20px;opacity:.8;margin-bottom:40px}
 
 .star{
 position:absolute;
-font-size:18px;
+font-size:20px;
 cursor:pointer;
 color:#fff;
-animation:float 6s linear infinite;
+transition:.3s;
 }
+.star:hover{transform:scale(1.4)}
 
-.visitor{color:#b266ff}
+.visitor{color:#b26bff}
 
-@keyframes float{
-from{transform:translateY(100vh)}
-to{transform:translateY(-10vh)}
-}
-
-.mandalina{
+.panel{
 position:fixed;
 bottom:30px;
 left:50%;
 transform:translateX(-50%);
-font-size:55px;
+}
+
+input{
+padding:10px;
+border-radius:12px;
+border:none;
+width:220px;
+}
+
+button{
+padding:10px 14px;
+border:none;
+border-radius:12px;
 cursor:pointer;
+margin-left:6px;
 }
 </style>
 </head>
@@ -47,17 +57,44 @@ cursor:pointer;
 <body>
 
 <h1>Koala Mevsimi</h1>
-<div class="alt">Sen benim en güzel mevsimimsin</div>
+<div class="alt">Yıldızlara dokunmayı unutma ✨</div>
 
+<div class="panel">
 <input id="visitorText" placeholder="Bir söz bırak...">
 <button onclick="addVisitor()">Gönder</button>
+</div>
 
-<div class="mandalina" onclick="heart()">🍊</div>
+<script>
+function createStar(text,isVisitor=false){
+const s=document.createElement("div");
+s.className="star"+(isVisitor?" visitor":"");
+s.innerText="✦";
+s.style.left=Math.random()*window.innerWidth+"px";
+s.style.top=Math.random()*window.innerHeight+"px";
+
+if(text){
+s.onclick=()=>{
+const kalp=document.createElement("div");
+kalp.innerText="💔";
+kalp.style.position="absolute";
+kalp.style.left=s.style.left;
+kalp.style.top=s.style.top;
+kalp.style.fontSize="28px";
+document.body.appendChild(kalp);
+setTimeout(()=>kalp.remove(),900);
+alert(text);
+};
+}
+
+document.body.appendChild(s);
+}
+
+for(let i=0;i<40;i++) createStar();
+</script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } 
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -69,50 +106,28 @@ messagingSenderId: "960846201677",
 appId: "1:960846201677:web:0f4126d042754a29ab6d04"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const ref=collection(db,"stars");
 
-function createStar(text,visitor=false){
-const s=document.createElement("div");
-s.className="star"+(visitor?" visitor":"");
-s.innerText="★";
-s.style.left=Math.random()*100+"vw";
-s.onclick=()=>alert(text);
-document.body.appendChild(s);
-}
-
-const sozler=[
-"Seni sevmek gökyüzüne bakmak gibi",
-"Kalbim sende huzur buluyor",
-"Bir gülüşün yetiyor"
-];
-
-sozler.forEach(s=>createStar(s));
-
-onSnapshot(collection(db,"sozler"),snap=>{
-document.querySelectorAll(".visitor").forEach(e=>e.remove());
-snap.forEach(d=>createStar(d.data().text,true));
-});
-
-window.addVisitor=async ()=>{
+window.addVisitor=async function(){
 const val=document.getElementById("visitorText").value;
-if(!val)return;
-await addDoc(collection(db,"sozler"),{text:val});
+if(!val) return;
+
+await addDoc(ref,{text:val,time:Date.now()});
 document.getElementById("visitorText").value="";
-}
+};
 
-window.heart=()=>{
-const h=document.createElement("div");
-h.innerText="❤️";
-h.style.position="fixed";
-h.style.left="50%";
-h.style.bottom="90px";
-h.style.fontSize="30px";
-document.body.appendChild(h);
-setTimeout(()=>h.remove(),1000);
-}
+const q=query(ref,orderBy("time"));
 
+onSnapshot(q,(snap)=>{
+snap.docChanges().forEach(change=>{
+if(change.type==="added"){
+createStar(change.doc.data().text,true);
+}
+});
+});
 </script>
+
 </body>
 </html>
-
