@@ -11,122 +11,105 @@ margin:0;
 background:linear-gradient(#020111,#000);
 color:white;
 font-family:Arial;
-text-align:center;
-min-height:100vh;
 overflow:hidden;
+text-align:center;
 }
 
-h1{margin-top:90px;font-size:38px}
-.alt{font-size:20px;opacity:.8;margin-bottom:40px}
+/* başlık */
+.header{
+margin-top:70px;
+font-size:38px;
+}
 
+/* mandalina */
+.mandalina{
+cursor:pointer;
+font-size:32px;
+margin-left:10px;
+}
+
+/* alt yazı */
+.alt{
+margin-top:10px;
+opacity:.8;
+font-size:20px;
+}
+
+/* yıldız */
 .star{
 position:absolute;
-font-size:20px;
+color:white;
+font-size:18px;
 cursor:pointer;
-color:#fff;
-transition:.3s;
 }
-.star:hover{transform:scale(1.4)}
 
-.visitor{color:#b26bff}
-
-.panel{
+.popup{
 position:fixed;
-bottom:30px;
+top:50%;
 left:50%;
-transform:translateX(-50%);
-}
-
-input{
-padding:10px;
-border-radius:12px;
-border:none;
-width:220px;
-}
-
-button{
-padding:10px 14px;
-border:none;
-border-radius:12px;
-cursor:pointer;
-margin-left:6px;
+transform:translate(-50%,-50%);
+background:#000;
+padding:18px;
+border-radius:14px;
+border:1px solid #444;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Koala Mevsimi</h1>
-<div class="alt">Yıldızlara dokunmayı unutma ✨</div>
-
-<div class="panel">
-<input id="visitorText" placeholder="Bir söz bırak...">
-<button onclick="addVisitor()">Gönder</button>
+<div class="header">
+Koala Mevsimi 
+<span class="mandalina" onclick="mandalina()">🍊</span>
 </div>
 
+<div class="alt">yıldızların üstüne basmayı unutma</div>
+
 <script>
-function createStar(text,isVisitor=false){
+/* SÖZLER */
+const sozler=[
+"Özlemek, adını içimde sessizce haykırmaktır.",
+"Hasretin geceleri en çok konuşan sessizliğim oldu.",
+"Sen yoksan kalabalıklar bile yalnız.",
+"Sesini unutmadım ama artık duymaya hakkım yok.",
+"Kalbim senden vazgeçmedi sadece yoruldu.",
+"Mutlu olduğun yerde değilim ama hâlâ seninleyim.",
+"Yokluğun içimde ağır bir boşluk.",
+"Gözlerin uzakta ama kalbin içimde.",
+"Bir gün sarılırsam bütün hasretim gözyaşı olacak.",
+"İçimde hâlâ sen varsın ama eskisi gibi değil."
+];
+
+/* yıldız oluştur */
+function starOlustur(){
 const s=document.createElement("div");
-s.className="star"+(isVisitor?" visitor":"");
+s.className="star";
 s.innerText="✦";
 s.style.left=Math.random()*window.innerWidth+"px";
 s.style.top=Math.random()*window.innerHeight+"px";
 
-if(text){
 s.onclick=()=>{
-const kalp=document.createElement("div");
-kalp.innerText="💔";
-kalp.style.position="absolute";
-kalp.style.left=s.style.left;
-kalp.style.top=s.style.top;
-kalp.style.fontSize="28px";
-document.body.appendChild(kalp);
-setTimeout(()=>kalp.remove(),900);
-alert(text);
+const pop=document.createElement("div");
+pop.className="popup";
+pop.innerText=sozler[Math.floor(Math.random()*sozler.length)];
+document.body.appendChild(pop);
+setTimeout(()=>pop.remove(),2600);
 };
-}
 
 document.body.appendChild(s);
 }
 
-for(let i=0;i<40;i++) createStar();
-</script>
+/* ekran dolusu yıldız */
+for(let i=0;i<80;i++) starOlustur();
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyAu4Plky_LdaPsPPwtg2y5FEplgDqnUMhA",
-authDomain: "koala-mevsimi.firebaseapp.com",
-projectId: "koala-mevsimi",
-storageBucket: "koala-mevsimi.firebasestorage.app",
-messagingSenderId: "960846201677",
-appId: "1:960846201677:web:0f4126d042754a29ab6d04"
-};
-
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
-const ref=collection(db,"stars");
-
-window.addVisitor=async function(){
-const val=document.getElementById("visitorText").value;
-if(!val) return;
-
-await addDoc(ref,{text:val,time:Date.now()});
-document.getElementById("visitorText").value="";
-};
-
-const q=query(ref,orderBy("time"));
-
-onSnapshot(q,(snap)=>{
-snap.docChanges().forEach(change=>{
-if(change.type==="added"){
-createStar(change.doc.data().text,true);
+/* mandalina söz */
+function mandalina(){
+const pop=document.createElement("div");
+pop.className="popup";
+pop.innerText="Kalbim senden vazgeçmedi… sadece dayanacak gücü kalmadı.";
+document.body.appendChild(pop);
+setTimeout(()=>pop.remove(),2800);
 }
-});
-});
 </script>
 
 </body>
