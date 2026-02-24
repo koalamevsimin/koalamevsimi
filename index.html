@@ -11,31 +11,26 @@ margin:0;
 background:linear-gradient(#020111,#000);
 color:white;
 font-family:Arial;
-overflow:hidden;
 text-align:center;
+min-height:200vh;
 }
 
-/* başlık */
+/* başlık alanı */
 .header{
-margin-top:70px;
+margin-top:80px;
 font-size:38px;
+position:relative;
+z-index:5;
 }
 
-/* mandalina */
 .mandalina{
 cursor:pointer;
 font-size:32px;
 margin-left:10px;
 }
 
-/* alt yazı */
-.alt{
-margin-top:10px;
-opacity:.8;
-font-size:20px;
-}
+.alt{margin-top:10px;font-size:20px;opacity:.8;z-index:5;position:relative}
 
-/* yıldız */
 .star{
 position:absolute;
 color:white;
@@ -45,7 +40,6 @@ cursor:pointer;
 
 .visitor{color:#b26bff}
 
-/* popup */
 .popup{
 position:fixed;
 top:50%;
@@ -55,26 +49,15 @@ background:#000;
 padding:18px;
 border-radius:14px;
 border:1px solid #444;
+z-index:10;
 }
 
-/* söz kutusu */
 .panel{
 position:fixed;
 bottom:20px;
 left:50%;
 transform:translateX(-50%);
-}
-
-/* kayan yıldız */
-.shooting{
-position:absolute;
-color:white;
-font-size:18px;
-animation:shoot 2s linear forwards;
-}
-@keyframes shoot{
-from{transform:translate(-100px,-100px)}
-to{transform:translate(600px,400px);opacity:0}
+z-index:5;
 }
 </style>
 </head>
@@ -82,11 +65,9 @@ to{transform:translate(600px,400px);opacity:0}
 <body>
 
 <div class="header">
-Koala Mevsimi 
-<span class="mandalina" onclick="mandalina()">🍊</span>
-</div>
-
+Koala Mevsimi <span class="mandalina" onclick="mandalina()">🍊</span>
 <div class="alt">yıldızların üstüne basmayı unutma</div>
+</div>
 
 <div class="panel">
 <input id="txt" placeholder="bir söz bırak..." style="padding:8px;border-radius:10px;border:none">
@@ -96,13 +77,9 @@ Koala Mevsimi
 <script>
 const sozler=[
 "Özlemek, adını içimde sessizce haykırmaktır.",
-"Hasret geceleri en çok konuşan sessizliğim oldu.",
 "Sen yoksan kalabalıklar bile yalnız.",
 "Sesini unutmadım ama artık duymaya hakkım yok.",
-"Kalbim senden vazgeçmedi sadece yoruldu.",
-"Mutlu olduğun yerde değilim ama hâlâ seninleyim.",
-"Yokluğun içimde ağır bir boşluk.",
-"İçimde hâlâ sen varsın ama eskisi gibi değil."
+"Kalbim senden vazgeçmedi sadece yoruldu."
 ];
 
 function kalp(x,y){
@@ -120,8 +97,10 @@ function star(text,isVisitor=false){
 const s=document.createElement("div");
 s.className="star"+(isVisitor?" visitor":"");
 s.innerText="✦";
+
+/* üstte yazı alanına yıldız gelmesin */
 s.style.left=Math.random()*window.innerWidth+"px";
-s.style.top=Math.random()*window.innerHeight+"px";
+s.style.top=(150+Math.random()*(document.body.scrollHeight-150))+"px";
 
 s.onclick=()=>{
 kalp(s.style.left,s.style.top);
@@ -138,7 +117,6 @@ document.body.appendChild(s);
 /* sabit yıldızlar */
 for(let i=0;i<80;i++) star();
 
-/* mandalina */
 function mandalina(){
 const p=document.createElement("div");
 p.className="popup";
@@ -146,31 +124,40 @@ p.innerText="Kalbim senden vazgeçmedi… sadece dayanacak gücü kalmadı.";
 document.body.appendChild(p);
 setTimeout(()=>p.remove(),2800);
 }
+</script>
 
-/* ziyaretçi söz */
-function addVisitor(){
+<!-- 🔥 FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey:"AIzaSyAu4Plky_LdaPsPPwtg2y5FEplgDqnUMhA",
+authDomain:"koala-mevsimi.firebaseapp.com",
+projectId:"koala-mevsimi",
+storageBucket:"koala-mevsimi.firebasestorage.app",
+messagingSenderId:"960846201677",
+appId:"1:960846201677:web:0f4126d042754a29ab6d04"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const ref=collection(db,"sozler");
+
+window.addVisitor=async function(){
 const val=document.getElementById("txt").value;
 if(!val) return;
-localStorage.setItem("soz"+Date.now(),val);
-star(val,true);
+await addDoc(ref,{text:val,time:Date.now()});
 document.getElementById("txt").value="";
-}
+};
 
-/* kayıtlı sözleri yükle */
-for(let i in localStorage){
-if(i.startsWith("soz")) star(localStorage[i],true);
-}
-
-/* kayan yıldız */
-setInterval(()=>{
-const s=document.createElement("div");
-s.className="shooting";
-s.innerText="✦";
-s.style.left=Math.random()*window.innerWidth+"px";
-s.style.top="0px";
-document.body.appendChild(s);
-setTimeout(()=>s.remove(),2000);
-},5000);
+const q=query(ref,orderBy("time"));
+onSnapshot(q,(snap)=>{
+snap.docChanges().forEach(c=>{
+if(c.type==="added") star(c.doc.data().text,true);
+});
+});
 </script>
 
 </body>
