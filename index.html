@@ -43,6 +43,9 @@ font-size:18px;
 cursor:pointer;
 }
 
+.visitor{color:#b26bff}
+
+/* popup */
 .popup{
 position:fixed;
 top:50%;
@@ -52,6 +55,26 @@ background:#000;
 padding:18px;
 border-radius:14px;
 border:1px solid #444;
+}
+
+/* söz kutusu */
+.panel{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+}
+
+/* kayan yıldız */
+.shooting{
+position:absolute;
+color:white;
+font-size:18px;
+animation:shoot 2s linear forwards;
+}
+@keyframes shoot{
+from{transform:translate(-100px,-100px)}
+to{transform:translate(600px,400px);opacity:0}
 }
 </style>
 </head>
@@ -65,51 +88,89 @@ Koala Mevsimi
 
 <div class="alt">yıldızların üstüne basmayı unutma</div>
 
+<div class="panel">
+<input id="txt" placeholder="bir söz bırak..." style="padding:8px;border-radius:10px;border:none">
+<button onclick="addVisitor()" style="padding:8px;border-radius:10px;border:none">Gönder</button>
+</div>
+
 <script>
-/* SÖZLER */
 const sozler=[
 "Özlemek, adını içimde sessizce haykırmaktır.",
-"Hasretin geceleri en çok konuşan sessizliğim oldu.",
+"Hasret geceleri en çok konuşan sessizliğim oldu.",
 "Sen yoksan kalabalıklar bile yalnız.",
 "Sesini unutmadım ama artık duymaya hakkım yok.",
 "Kalbim senden vazgeçmedi sadece yoruldu.",
 "Mutlu olduğun yerde değilim ama hâlâ seninleyim.",
 "Yokluğun içimde ağır bir boşluk.",
-"Gözlerin uzakta ama kalbin içimde.",
-"Bir gün sarılırsam bütün hasretim gözyaşı olacak.",
 "İçimde hâlâ sen varsın ama eskisi gibi değil."
 ];
 
-/* yıldız oluştur */
-function starOlustur(){
+function kalp(x,y){
+const k=document.createElement("div");
+k.innerText="💔";
+k.style.position="absolute";
+k.style.left=x;
+k.style.top=y;
+k.style.fontSize="26px";
+document.body.appendChild(k);
+setTimeout(()=>k.remove(),900);
+}
+
+function star(text,isVisitor=false){
 const s=document.createElement("div");
-s.className="star";
+s.className="star"+(isVisitor?" visitor":"");
 s.innerText="✦";
 s.style.left=Math.random()*window.innerWidth+"px";
 s.style.top=Math.random()*window.innerHeight+"px";
 
 s.onclick=()=>{
-const pop=document.createElement("div");
-pop.className="popup";
-pop.innerText=sozler[Math.floor(Math.random()*sozler.length)];
-document.body.appendChild(pop);
-setTimeout(()=>pop.remove(),2600);
+kalp(s.style.left,s.style.top);
+const p=document.createElement("div");
+p.className="popup";
+p.innerText=text || sozler[Math.floor(Math.random()*sozler.length)];
+document.body.appendChild(p);
+setTimeout(()=>p.remove(),2600);
 };
 
 document.body.appendChild(s);
 }
 
-/* ekran dolusu yıldız */
-for(let i=0;i<80;i++) starOlustur();
+/* sabit yıldızlar */
+for(let i=0;i<80;i++) star();
 
-/* mandalina söz */
+/* mandalina */
 function mandalina(){
-const pop=document.createElement("div");
-pop.className="popup";
-pop.innerText="Kalbim senden vazgeçmedi… sadece dayanacak gücü kalmadı.";
-document.body.appendChild(pop);
-setTimeout(()=>pop.remove(),2800);
+const p=document.createElement("div");
+p.className="popup";
+p.innerText="Kalbim senden vazgeçmedi… sadece dayanacak gücü kalmadı.";
+document.body.appendChild(p);
+setTimeout(()=>p.remove(),2800);
 }
+
+/* ziyaretçi söz */
+function addVisitor(){
+const val=document.getElementById("txt").value;
+if(!val) return;
+localStorage.setItem("soz"+Date.now(),val);
+star(val,true);
+document.getElementById("txt").value="";
+}
+
+/* kayıtlı sözleri yükle */
+for(let i in localStorage){
+if(i.startsWith("soz")) star(localStorage[i],true);
+}
+
+/* kayan yıldız */
+setInterval(()=>{
+const s=document.createElement("div");
+s.className="shooting";
+s.innerText="✦";
+s.style.left=Math.random()*window.innerWidth+"px";
+s.style.top="0px";
+document.body.appendChild(s);
+setTimeout(()=>s.remove(),2000);
+},5000);
 </script>
 
 </body>
